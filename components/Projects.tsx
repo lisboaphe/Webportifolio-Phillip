@@ -68,7 +68,7 @@ export function Projects() {
                   href={project.href}
                   className="mt-10 inline-flex w-fit items-center gap-2 text-sm font-medium text-white/70 transition group-hover:text-white"
                 >
-                  Open project <span className="transition group-hover:translate-x-1">↗</span>
+                  Open project
                 </a> : <span className="mt-10 text-sm text-white/50">Project details coming soon</span>}
               </div>
             </article>

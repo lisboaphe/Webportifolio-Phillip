@@ -191,37 +191,66 @@ export function Portfolio() {
       front.removeAttribute("id"); front.tabIndex = -1;
       front.classList.add("flip-front");
       const back = !target && panel.current ? panel.current.cloneNode(true) as HTMLElement : document.createElement("div");
-      back.removeAttribute("id");
-      back.removeAttribute("role");
+      back.removeAttribute("id"); back.removeAttribute("role");
       back.className = !target ? "destination flip-back closing-snapshot" : "flip-back";
-      if(target) back.textContent = tabs.find(t => t.id === target)?.label || "";
-      surface.replaceChildren(front, back);
-      surface.style.setProperty("--tile-accent", getComputedStyle(source).getPropertyValue("--tile-accent"));
-      const small = { left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px`, borderRadius: "24px", transform: "perspective(1400px) rotateY(0deg)" };
-      const turned = { ...small, transform: "perspective(1400px) rotateY(180deg)" };
+      if (target) back.textContent = tabs.find(t => t.id === target)?.label || "";
+      const rotor = document.createElement("div");
+      rotor.className = "flip-rotor";
+      rotor.replaceChildren(front, back);
+      surface.replaceChildren(rotor);
       const gap = innerWidth <= 560 ? 12 : 28;
-      const large = { left: `${gap}px`, top: `${gap}px`, width: `${innerWidth-gap*2}px`, height: `${innerHeight-gap*2}px`, borderRadius: "24px", transform: "perspective(1400px) rotateY(180deg)" };
+      const width = innerWidth - gap * 2, height = innerHeight - gap * 2;
+      // Layout is set once. Every moving frame changes only transform.
+      Object.assign(surface.style, {left:"0px", top:"0px", width:`${width}px`, height:`${height}px`});
+      surface.style.setProperty("--tile-accent", getComputedStyle(source).getPropertyValue("--tile-accent"));
+      surface.style.setProperty("--front-width", `${rect.width}px`);
+      surface.style.setProperty("--front-height", `${rect.height}px`);
+      surface.style.setProperty("--front-scale-x", `${width / rect.width}`);
+      surface.style.setProperty("--front-scale-y", `${height / rect.height}`);
+      const small = `translate3d(${rect.left}px,${rect.top}px,0) scale(${rect.width/width},${rect.height/height})`;
+      const large = `translate3d(${gap}px,${gap}px,0) scale(1,1)`;
+      surface.style.transform = target ? small : large;
+      rotor.style.transform = `rotateY(${target ? 0 : 180}deg)`;
       surface.style.visibility = "visible";
       source.style.visibility = "hidden";
       if (!target && panel.current) {
         back.scrollTop = panel.current.scrollTop;
         panel.current.style.visibility = "hidden";
       }
-      // One continuous timeline: 200ms flip + 460ms expansion;
-      // reverse with 420ms shrinking + 200ms flip. No holds or timer gaps.
-      const animation = surface.animate(target ? [
-        {...small, easing: "cubic-bezier(.3,0,.7,1)"},
-        {...turned, offset: 200/660, easing: "cubic-bezier(.16,.65,.25,1)"},
-        large,
+      const options: KeyframeAnimationOptions = {duration: target ? 680 : 620, easing:"linear", fill:"forwards"};
+      // Slightly overlap the phase boundaries so neither handoff comes to a stop.
+      const movement = surface.animate(target ? [
+        {transform:small, offset:0},
+        {transform:small, offset:.24, easing:"cubic-bezier(.2,.65,.25,1)"},
+        {transform:large, offset:1},
       ] : [
-        {...large, easing: "cubic-bezier(.25,.1,.4,1)"},
-        {...turned, offset: 420/620, easing: "cubic-bezier(.3,0,.7,1)"},
-        small,
-      ], { duration: target ? 660 : 620, easing: "linear", fill: "forwards" });
-      await animation.finished.catch(()=>{});
-      surface.style.visibility = "hidden"; animation.cancel();
-      source.style.visibility = "";
-      surface.replaceChildren();
+        {transform:large, offset:0, easing:"cubic-bezier(.25,.1,.35,1)"},
+        {transform:small, offset:.76},
+        {transform:small, offset:1},
+      ], options);
+      const rotation = rotor.animate(target ? [
+        {transform:"rotateY(0deg)",offset:0,easing:"cubic-bezier(.3,0,.7,1)"},
+        {transform:"rotateY(180deg)",offset:.34},
+        {transform:"rotateY(180deg)",offset:1},
+      ] : [
+        {transform:"rotateY(180deg)",offset:0},
+        {transform:"rotateY(180deg)",offset:.66,easing:"cubic-bezier(.3,0,.7,1)"},
+        {transform:"rotateY(0deg)",offset:1},
+      ], options);
+      try {
+        await Promise.all([movement.finished, rotation.finished]);
+        setPage(target); opened.current = target;
+        // Keep the final animated face until React has painted the real panel/tile.
+        await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+      } catch {
+        setPage(target); opened.current = target;
+      } finally {
+        surface.style.visibility = "hidden";
+        movement.cancel(); rotation.cancel();
+        source.style.visibility = "";
+        if (panel.current) panel.current.style.visibility = "";
+        surface.replaceChildren();
+      }
     }
     transitionLock.current = false;
     setPage(target); opened.current = target; setBusy(false);

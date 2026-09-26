@@ -87,3 +87,7 @@ Both original CV PDFs are now bundled in `public/cv`, with working English and G
 
 ## Continuous transition timing
 Opening uses one 660ms timeline (200ms flip, 460ms expansion); closing uses 620ms (420ms shrinking, 200ms flip). The phases share a boundary with no delay. The final content entrance lasts 160ms. GitHub now points to lisboaphe and omachi-pet is linked from Projects. Its detailed description awaits README content.
+
+## Transform-based transition update
+
+The tile overlay now sets dimensions once and animates only transforms on two synchronized layers. Rotation and scaling overlap at the phase boundaries; all blur, filters and nested animation are disabled on the moving copy. Content remains covered until React has painted the destination. Opening is 680ms and closing is 620ms. Current layout is unchanged. Both email links use lisboaphe@gmail.com. Project links say “Open project” without an arrow. TypeScript and transition logic checks pass; the latest production build could not run in the execution environment due to `uv_resident_set_memory` (ENOENT). Live visual/performance verification is still required.

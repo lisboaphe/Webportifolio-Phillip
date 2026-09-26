@@ -7,7 +7,7 @@ export const site = {
   heroLine: "Building thoughtful web experiences, one pixel at a time.",
   intro:
     "I enjoy turning ideas into clean, responsive interfaces with personality. This portfolio is still growing with me — more projects, experiments and details are coming along the way.",
-  email: "hello@example.com",
+  email: "lisboaphe@gmail.com",
   socials: {
     github: "https://github.com/lisboaphe",
     linkedin: "https://www.linkedin.com/in/phillip-bittencourt-lisboa-056b05306/",
