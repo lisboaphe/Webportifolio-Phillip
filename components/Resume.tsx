@@ -1,0 +1,4 @@
+import { site } from "@/data/site";
+export function Resume() {
+  return <section className="resume-content"><p className="eyebrow">Résumé</p><h2>Phillip Lisboa</h2><p className="resume-subtitle">Wirtschaftsinformatik Student · Developer · Cybersecurity Enthusiast</p><div className="content-glass resume-summary"><h3>Development, systems & security</h3><p>Building modern web experiences with React, Next.js and Tailwind CSS.</p><p>Hands-on experience with Linux, VMs, troubleshooting and system customization.</p><p>Learning security through networking, tools, labs and hands-on experimentation.</p></div><div className="cv-languages" aria-label="CV languages">{site.resumes.map(cv=>cv.url ? <a className="resume-download" key={cv.lang} href={cv.url} hrefLang={cv.lang} target="_blank" rel="noopener noreferrer">CV · {cv.language}</a> : <div className="cv-pending" key={cv.lang}><strong>CV · {cv.language}</strong><span>PDF coming soon</span></div>)}</div></section>;
+}
