@@ -200,7 +200,7 @@ export function Portfolio() {
       surface.replaceChildren(rotor);
       const gap = innerWidth <= 560 ? 12 : 28;
       const width = innerWidth - gap * 2, height = innerHeight - gap * 2;
-      // Layout is set once. Every moving frame changes only transform.
+      // Set layout once; animate transforms only on synchronized layers.
       Object.assign(surface.style, {left:"0px", top:"0px", width:`${width}px`, height:`${height}px`});
       surface.style.setProperty("--tile-accent", getComputedStyle(source).getPropertyValue("--tile-accent"));
       surface.style.setProperty("--front-width", `${rect.width}px`);
@@ -218,7 +218,6 @@ export function Portfolio() {
         panel.current.style.visibility = "hidden";
       }
       const options: KeyframeAnimationOptions = {duration: target ? 680 : 620, easing:"linear", fill:"forwards"};
-      // Slightly overlap the phase boundaries so neither handoff comes to a stop.
       const movement = surface.animate(target ? [
         {transform:small, offset:0},
         {transform:small, offset:.24, easing:"cubic-bezier(.2,.65,.25,1)"},
@@ -240,7 +239,6 @@ export function Portfolio() {
       try {
         await Promise.all([movement.finished, rotation.finished]);
         setPage(target); opened.current = target;
-        // Keep the final animated face until React has painted the real panel/tile.
         await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
       } catch {
         setPage(target); opened.current = target;
@@ -275,7 +273,7 @@ export function Portfolio() {
     <div ref={hero} onAnimationEnd={event => { if (event.target === event.currentTarget && event.animationName === "water-reveal") { event.currentTarget.style.animation = "none"; event.currentTarget.style.clipPath = "none"; } }} className={`hero-surface ${revealed ? "is-revealed" : ""}`} inert={!revealed || !!page || busy}>
       <div className="bento-layout">
         <section className="focus-areas" aria-label="What I do">{focusAreas.map(area => <article className="focus-card" key={area.title}><PixelIcon name={`Icon_${area.icon}`}/><h2>{area.title}</h2><p>{area.text}</p></article>)}</section>
-        <div ref={photo} className="photo-tile"><img src="/chibi/phillip.png" alt="Temporary illustrated portrait of Phillip" className="portrait-image"/><div className="photo-caption"><span>PHILLIP</span><span>One pixel at a time.</span></div></div>
+        <div ref={photo} className="photo-tile"><img src="/chibi/phillip.png" alt="Pixel-art Phillip wearing a black hoodie" className="portrait-image"/><div className="photo-caption"><span>PHILLIP</span><span>One pixel at a time.</span></div></div>
         <nav className="portal-nav" aria-label="Explore my portfolio">{tabs.map((tab)=><button key={tab.id} disabled={busy} onClick={e=>{history.pushState(null,"",`#${tab.id}`);void transition(tab.id,e.currentTarget);}} className={`portal-button tile-${tab.id}`}>{tab.icon ? <PixelIcon name={tab.icon}/> : <span className="portal-glyph">{tab.glyph}</span>}<span className="portal-text"><strong>{tab.label}</strong><small>{tab.detail}</small></span></button>)}
         <div className={`portal-button tile-contact contact-card ${contactOpen ? "contact-open" : ""}`} onKeyDown={e=>{if(e.key==="Escape") {setContactOpen(false);e.currentTarget.querySelector("button")?.focus();}}}>
           <button className="contact-toggle" aria-expanded={contactOpen} aria-controls="contact-options" onClick={()=>setContactOpen(v=>!v)}><span className="contact-heading"><PixelIcon name="Icon_Contact"/><span className="portal-text"><strong>Contact</strong><small>Let’s connect</small></span></span></button>
@@ -285,9 +283,9 @@ export function Portfolio() {
     </div>
     <div ref={anchor} className={`character-anchor ${page ? "character-hidden" : ""}`}><Character key={introRun} forceMotion={forceMotion} ready={revealed} onSit={reveal}/></div>
     </div>
-    {revealed && !page && <Workstation animated={forceMotion && !busy}/> }
-    {revealed && !page && !busy && <div className="motion-controls"><button onClick={() => setForceMotion(v => !v)} aria-pressed={forceMotion}>Tile animations: {forceMotion ? "on" : "off"}</button><button onClick={replay}>Replay intro ↺</button></div>}
-    {!revealed && !page && !busy && <button className="skip-intro" onClick={reveal}>Skip intro ↗</button>}
+    {revealed && !page && <Workstation/> }
+    {revealed && !page && !busy && <div className="motion-controls"><button onClick={() => setForceMotion(v => !v)} aria-pressed={forceMotion}>Tile animations: {forceMotion ? "on" : "off"}</button><button onClick={replay}>Replay intro</button></div>}
+    {!revealed && !page && !busy && <button className="skip-intro" onClick={reveal}>Skip intro</button>}
     <div className="transition-surface" ref={overlay} aria-hidden="true" inert/>
     {page && <div ref={panel} className="destination" role="dialog" aria-modal="true" aria-label={tabs.find(t=>t.id===page)?.label} tabIndex={-1} onKeyDown={e=>{if(e.key==="Escape")close();
       if(e.key==="Tab") {

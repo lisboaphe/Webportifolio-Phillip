@@ -26,6 +26,7 @@ export const site = {
     {
       number: "01",
       title: "Portfolio Playground",
+      category: "Development",
       description:
         "A personal space where modern UI meets small pixel-art details, playful motion and a strong responsive layout.",
       tags: ["Next.js", "TypeScript", "Tailwind"],
@@ -35,6 +36,7 @@ export const site = {
     {
       number: "02",
       title: "omachi-pet",
+      category: "Playground",
       description:
         "Explore the source code and project documentation on GitHub.",
       tags: ["GitHub"],
@@ -44,6 +46,7 @@ export const site = {
     {
       number: "03",
       title: "Experiment slot",
+      category: "Playground",
       description:
         "A place for something fun: a small app, animation experiment, game-like interaction or anything that shows your personality.",
       tags: ["Creative Dev", "Web"],

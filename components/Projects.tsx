@@ -48,7 +48,8 @@ export function Projects() {
                       {project.status}
                     </span>
                   </div>
-                  <h3 className="mt-7 text-3xl font-semibold tracking-[-0.035em] text-white sm:text-4xl">
+                  <p className="project-category">{project.category}</p>
+                  <h3 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-white sm:text-4xl">
                     {project.title}
                   </h3>
                   <p className="mt-4 max-w-xl leading-7 text-white/48">{project.description}</p>

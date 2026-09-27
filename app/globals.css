@@ -334,7 +334,6 @@ h1,h2,h3,h4,.portal-text strong,.flip-back{font-family:var(--font-title);font-we
 .transition-surface .tile-icon,.transition-surface img{animation:none!important}
 .motion-enabled .topic-content.animate__animated{animation-duration:160ms!important}
 
-/* Transform-only transition layers: no resizing or glass sampling while moving. */
 .transition-surface{will-change:transform;transform-origin:0 0;transform-style:preserve-3d;perspective:1400px}
 .flip-rotor{position:absolute;inset:0;transform-style:preserve-3d;transform-origin:center;will-change:transform}
 .transition-surface .flip-front{width:var(--front-width)!important;height:var(--front-height)!important;transform:scale(var(--front-scale-x),var(--front-scale-y))!important;transform-origin:0 0;backface-visibility:hidden}
@@ -342,3 +341,9 @@ h1,h2,h3,h4,.portal-text strong,.flip-back{font-family:var(--font-title);font-we
 .transition-surface,.transition-surface *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;filter:none!important;animation:none!important;transition:none!important;box-shadow:none!important}
 .transition-surface .closing-snapshot{background:linear-gradient(140deg,#34364d,#243847);border-radius:24px}
 .motion-enabled .topic-content.animate__animated{animation:none!important}
+
+/* Static supplied artwork and category labels, retaining the existing grid. */
+.workstation>img{display:block;width:100%;height:auto;image-rendering:pixelated}
+.photo-tile{background:var(--glass-fill);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+.portrait-image{object-fit:contain;padding:24px 12px 65px}
+.project-category{display:inline-block;margin:24px 0 0;padding:5px 10px;border:1px solid #a9cfff40;border-radius:8px;color:#b8d9ff!important;font-size:12px;letter-spacing:.04em}
