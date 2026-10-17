@@ -4,3 +4,6 @@ out
 .DS_Store
 *.log
 .env*
+
+# Automatisch erzeugter TypeScript-Zwischenspeicher
+*.tsbuildinfo

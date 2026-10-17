@@ -6,6 +6,8 @@ import "@fontsource/fira-sans/latin-500.css";
 import "@fontsource/fira-sans/latin-600.css";
 import "animate.css";
 import "./globals.css";
+import "@/styles/portfolio.css";
+import "@/styles/animations.css";
 
 export const metadata: Metadata = {
   title: "Phillip Lisboa | Aspiring Cybersecurity Professional",

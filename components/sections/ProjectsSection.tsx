@@ -1,7 +1,7 @@
-import { site } from "@/data/site";
-import { SectionHeading } from "./SectionHeading";
+import { site } from "@/data/portfolio-content";
+import { SectionHeading } from "@/components/ui/SectionHeading";
 
-export function Projects() {
+export function ProjectsSection() {
   return (
     <section id="work" className="px-5 py-24 sm:px-7 sm:py-28 lg:px-10 lg:py-36">
       <div className="mx-auto max-w-7xl">

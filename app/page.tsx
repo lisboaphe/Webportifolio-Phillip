@@ -1,2 +1,5 @@
-import { Portfolio } from "@/components/Portfolio";
-export default function Home() { return <Portfolio />; }
+import { PortfolioLayout } from "@/components/layout/PortfolioLayout";
+
+export default function HomePage() {
+  return <PortfolioLayout />;
+}

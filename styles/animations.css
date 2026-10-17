@@ -1,0 +1,13 @@
+
+
+@keyframes floatPixel {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(6deg); }
+}
+
+@keyframes nudgeDown {
+  0%, 100% { transform: translateY(0); opacity: .45; }
+  50% { transform: translateY(5px); opacity: .9; }
+}
+@keyframes water-reveal{0%{clip-path:circle(0px at var(--origin-x) var(--origin-y));filter:brightness(1.65)}45%{filter:brightness(1.12)}100%{clip-path:circle(150vmax at var(--origin-x) var(--origin-y));filter:none}}@keyframes page-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@keyframes water-ring{from{transform:scale(0);opacity:.8}to{transform:scale(40);opacity:0}}
+@keyframes contact-flip{0%{transform:perspective(550px) rotateX(-90deg);opacity:0}100%{transform:perspective(550px) rotateX(0);opacity:1}}

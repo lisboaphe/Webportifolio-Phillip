@@ -1,4 +1,4 @@
-export function About() {
+export function AboutSection() {
   return <section id="about" className="about-story">
     <header><p className="eyebrow">The person behind the pixels</p><h2>About Me</h2></header>
     <article className="about-copy">
