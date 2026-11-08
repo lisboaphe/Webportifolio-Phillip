@@ -64,9 +64,17 @@ export function createChallenge() {
   return { image: renderSvg(`${a}+${b}=?`), token };
 }
 
+// Nonces of challenges already answered. Each challenge gets one guess, right or
+// wrong, so it can be neither brute-forced nor replayed (a wrong answer gets a new
+// challenge). Per server instance, like the rate limiter; entries drop once expired.
+const usedNonces = new Map<string, number>();
+
 export function verifyChallenge(token: string | undefined, answer: string) {
   const data = readToken<{ exp: number; nonce: string; answer: string }>(token);
-  if (!data) return false;
+  if (!data || usedNonces.has(data.nonce)) return false;
+  const now = Date.now();
+  for (const [nonce, exp] of usedNonces) if (exp < now) usedNonces.delete(nonce);
+  usedNonces.set(data.nonce, data.exp);
   const cleaned = answer.trim();
   if (!/^\d{1,3}$/.test(cleaned)) return false;
   return safeEqual(data.answer, sign(`${Number(cleaned)}:${data.nonce}`));
