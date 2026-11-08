@@ -4,12 +4,14 @@ import { useEffect, useRef } from "react";
 
 // Read each supplied frame's opaque bounds at runtime. This keeps the original
 // artwork untouched and removes the sheets' unequal transparent margins.
-export function CharacterIntro({ ready, onSit, forceMotion = false }: { ready: boolean; onSit: () => void; forceMotion?: boolean }) {
+export function CharacterIntro({ ready, onSit, onCue, forceMotion = false }: { ready: boolean; onSit: () => void; onCue?: (step: 1 | 2) => void; forceMotion?: boolean }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const readyRef = useRef(ready);
   readyRef.current = ready;
   const callback = useRef(onSit);
   callback.current = onSit;
+  const cue = useRef(onCue);
+  cue.current = onCue;
   useEffect(() => {
     let cancelled = false, raf = 0;
     const load = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => {
@@ -69,6 +71,9 @@ export function CharacterIntro({ ready, onSit, forceMotion = false }: { ready: b
       const walkEnd = 1500, sitFrame = 100;
       const sitFinished = walkEnd + 12 * sitFrame;
       const revealAt = sitFinished + 200;
+      // Two small "countdown" ripples before the big reveal ripple.
+      const cues: [number, 1 | 2][] = [[revealAt - 800, 1], [revealAt - 400, 2]];
+      let cued = 0;
       const reduced = !forceMotion && matchMedia("(prefers-reduced-motion: reduce)").matches;
       const skip = reduced;
       const start = performance.now(); let settled = false;
@@ -94,6 +99,7 @@ export function CharacterIntro({ ready, onSit, forceMotion = false }: { ready: b
         const travel = Math.max(0, canvas.current.parentElement?.offsetLeft ?? innerWidth * .6);
         canvas.current.style.transform = `translateX(${forcedSkip ? 0 : -Math.max(0,1-elapsed/walkEnd)*travel}px)`;
         canvas.current.dataset.phase = elapsed < walkEnd ? "walking" : elapsed < sitFinished ? "sitting" : elapsed < revealAt ? "settling" : "idle";
+        while (!forcedSkip && cued < cues.length && elapsed >= cues[cued][0]) cue.current?.(cues[cued++][1]);
         if (elapsed >= revealAt && !settled) { settled = true; callback.current(); }
         if (!reduced) raf = requestAnimationFrame(render);
       };

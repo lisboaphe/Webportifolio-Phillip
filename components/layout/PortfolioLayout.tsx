@@ -48,6 +48,7 @@ export function PortfolioLayout() {
   const [introRun, setIntroRun] = useState(0);
   const [forceMotion, setForceMotion] = useState(true);
   const [contactOpen, setContactOpen] = useState(false);
+  const [drops, setDrops] = useState<{ id: number; step: 1 | 2; x: number; y: number }[]>([]);
   const photo = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const transitionLock = useRef(false);
@@ -63,6 +64,12 @@ export function PortfolioLayout() {
     }
     setRevealed(true);
     try { localStorage.setItem(INTRO_SEEN_KEY, "1"); } catch {}
+  };
+  // Small and medium ripple at the spot where the big reveal ripple will start.
+  const drop = (step: 1 | 2) => {
+    const a = anchor.current?.getBoundingClientRect(), h = hero.current?.getBoundingClientRect(), s = stage.current?.getBoundingClientRect();
+    if (!a || !h || !s) return;
+    setDrops(list => [...list, { id: Date.now() + step, step, x: a.left + a.width / 2 - s.left, y: h.top - s.top }]);
   };
   const replay = () => { hero.current?.style.removeProperty("clip-path"); hero.current?.style.removeProperty("animation"); setForceMotion(true); setRevealed(false); setIntroRun(n => n + 1); window.scrollTo(0, 0); };
   useEffect(() => {
@@ -138,6 +145,7 @@ export function PortfolioLayout() {
   return <main className={`portfolio-shell ${revealed ? "intro-complete" : "intro-playing"} ${forceMotion ? "force-motion motion-enabled" : "motion-reduced"}`}>
     <div ref={stage} className="stage">
     <div className="sitting-line" aria-hidden="true"/>
+    {drops.map(d => <span key={d.id} className={`pre-ripple step-${d.step}`} style={{left: d.x, top: d.y}} aria-hidden="true" onAnimationEnd={() => setDrops(list => list.filter(x => x.id !== d.id))}/>)}
     <header className="identity" aria-hidden={!revealed || !!page}><div className="identity-content"><h1>Phillip Lisboa</h1><p>Wirtschaftsinformatik Student · Developer · Cybersecurity Enthusiast</p></div></header>
     <nav className={`rim-socials ${page ? "character-hidden" : ""}`} aria-label="Social links" inert={!revealed || !!page || busy}>{socialItems.map(item=><SocialItem key={item.label} item={item} compact/>)}<button type="button" className="contact-link" aria-label="Send me a message" title="Send me a message" onClick={e=>openMessage(e.currentTarget)}><img src="/pixel/Icon_Email.svg" alt=""/></button></nav>
     <div ref={hero} onAnimationEnd={event => { if (event.target === event.currentTarget && event.animationName === "water-reveal") { event.currentTarget.style.animation = "none"; event.currentTarget.style.clipPath = "none"; } }} className={`hero-surface ${revealed ? "is-revealed" : ""}`} inert={!revealed || !!page || busy}>
@@ -151,7 +159,7 @@ export function PortfolioLayout() {
         </div></nav>
       </div>
     </div>
-    <div ref={anchor} className={`character-anchor ${page ? "character-hidden" : ""}`}><CharacterIntro key={`${introRun}-${forceMotion}`} forceMotion={forceMotion} ready={revealed} onSit={reveal}/></div>
+    <div ref={anchor} className={`character-anchor ${page ? "character-hidden" : ""}`}><CharacterIntro key={`${introRun}-${forceMotion}`} forceMotion={forceMotion} ready={revealed} onSit={reveal} onCue={drop}/></div>
     </div>
     {revealed && !page && <WorkstationArtwork/> }
     {revealed && !page && !busy && <div className="motion-controls"><button onClick={() => setForceMotion(v => !v)} aria-pressed={forceMotion}>Tile animations: {forceMotion ? "on" : "off"}</button><button onClick={replay}>Replay intro</button></div>}
