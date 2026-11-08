@@ -16,7 +16,12 @@ export async function animateTileTransition({surface, source, rect, panelRef, ta
   const back = !target && panelRef.current ? panelRef.current.cloneNode(true) as HTMLElement : document.createElement("div");
   back.removeAttribute("id"); back.removeAttribute("role");
   back.className = !target ? "destination flip-back closing-snapshot" : "flip-back";
-  if (target) back.textContent = label;
+  if (target) {
+    const heading = document.createElement("span");
+    heading.className = "flip-back-label";
+    heading.textContent = label;
+    back.replaceChildren(heading);
+  }
   const rotor = document.createElement("div");
   rotor.className = "flip-rotor";
   rotor.replaceChildren(front, back);
@@ -40,25 +45,27 @@ export async function animateTileTransition({surface, source, rect, panelRef, ta
     back.scrollTop = panelRef.current.scrollTop;
     panelRef.current.style.visibility = "hidden";
   }
-  const options: KeyframeAnimationOptions = {duration: target ? 680 : 620, easing:"linear", fill:"forwards"};
+  // Flip and grow run together, so the panel starts growing right away.
+  const options: KeyframeAnimationOptions = {duration: target ? 480 : 460, easing:"linear", fill:"forwards"};
   const movement = surface.animate(target ? [
-    {transform:small, offset:0},
-    {transform:small, offset:.24, easing:"cubic-bezier(.2,.65,.25,1)"},
+    {transform:small, offset:0, easing:"cubic-bezier(.3,.55,.3,1)"},
     {transform:large, offset:1},
   ] : [
-    {transform:large, offset:0, easing:"cubic-bezier(.25,.1,.35,1)"},
-    {transform:small, offset:.76},
+    {transform:large, offset:0, easing:"cubic-bezier(.45,0,.3,1)"},
     {transform:small, offset:1},
   ], options);
   const rotation = rotor.animate(target ? [
-    {transform:"rotateY(0deg)",offset:0,easing:"cubic-bezier(.3,0,.7,1)"},
-    {transform:"rotateY(180deg)",offset:.34},
+    {transform:"rotateY(0deg)",offset:0,easing:"cubic-bezier(.35,0,.55,1)"},
+    {transform:"rotateY(180deg)",offset:.55},
     {transform:"rotateY(180deg)",offset:1},
   ] : [
     {transform:"rotateY(180deg)",offset:0},
-    {transform:"rotateY(180deg)",offset:.66,easing:"cubic-bezier(.3,0,.7,1)"},
+    {transform:"rotateY(180deg)",offset:.45,easing:"cubic-bezier(.45,0,.65,1)"},
     {transform:"rotateY(0deg)",offset:1},
   ], options);
+  // 3. When closing, fade the panel's content out before it shrinks enough to look squashed.
+  const fades = !target ? Array.from(back.children).map(child =>
+    (child as HTMLElement).animate([{opacity:1},{opacity:0,offset:.3},{opacity:0}], options)) : [];
   try {
     await Promise.all([movement.finished, rotation.finished]);
     onCommit();
@@ -67,7 +74,7 @@ export async function animateTileTransition({surface, source, rect, panelRef, ta
     onCommit();
   } finally {
     surface.style.visibility = "hidden";
-    movement.cancel(); rotation.cancel();
+    movement.cancel(); rotation.cancel(); fades.forEach(fade => fade.cancel());
     source.style.visibility = "";
     if (panelRef.current) panelRef.current.style.visibility = "";
     surface.replaceChildren();

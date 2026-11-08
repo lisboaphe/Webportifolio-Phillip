@@ -48,8 +48,8 @@ export const site = {
       href: "https://github.com/lisboaphe/omachi-pet",
       layout: "tall",
       images: [
-        { src: "/projects/omachi-pet-home.png", alt: "Omachi Pet home tab: a blue slime listening to music by a lake, with fullness, happiness and energy bars" },
-        { src: "/projects/omachi-pet-activities.png", alt: "Omachi Pet activities tab with activity detection and training settings" },
+        { src: "/projects/omachi-pet-home.webp", alt: "Omachi Pet home tab: a blue slime listening to music by a lake, with fullness, happiness and energy bars" },
+        { src: "/projects/omachi-pet-activities.webp", alt: "Omachi Pet activities tab with activity detection and training settings" },
       ],
     },
     {

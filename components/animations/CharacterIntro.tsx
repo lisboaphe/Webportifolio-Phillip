@@ -15,7 +15,7 @@ export function CharacterIntro({ ready, onSit, forceMotion = false }: { ready: b
     const load = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new Image(); img.onload = () => resolve(img); img.onerror = reject; img.src = src;
     });
-    Promise.all([load("/pixel/walkind_and_sitting.png"), load("/pixel/looking_around.png")]).then(([walk, idle]) => {
+    Promise.all([load("/pixel/walking-and-sitting.webp"), load("/pixel/looking-around.webp")]).then(([walk, idle]) => {
       if (cancelled) return;
       const frames = (img: HTMLImageElement, cols: number, rowEdges: number[]) => {
         const temp = document.createElement("canvas"); temp.width = img.width; temp.height = img.height;
@@ -65,8 +65,10 @@ export function CharacterIntro({ ready, onSit, forceMotion = false }: { ready: b
       const lastSeated = walking[23];
       const seatedHeight = (validFrame(lastSeated) ? lastSeated.h : maxWalkHeight) / maxWalkHeight * 218;
       const maxIdleHeight = Math.max(...resting.filter(validFrame).map(frame => frame.h));
-      const sitFinished = 3950;
-      const revealAt = sitFinished + 500;
+      // Intro timing (ms): walk in, sit down, short pause, then reveal the page.
+      const walkEnd = 1500, sitFrame = 100;
+      const sitFinished = walkEnd + 12 * sitFrame;
+      const revealAt = sitFinished + 200;
       const reduced = !forceMotion && matchMedia("(prefers-reduced-motion: reduce)").matches;
       const skip = reduced;
       const start = performance.now(); let settled = false;
@@ -79,7 +81,7 @@ export function CharacterIntro({ ready, onSit, forceMotion = false }: { ready: b
         const delta = Number.isFinite(now) ? Math.max(0, now - start) : 0;
         const elapsed = forcedSkip ? revealAt + delta : delta;
         const isIdle = elapsed >= revealAt;
-        const index = isIdle ? Math.floor((elapsed-revealAt)/240)%16 : elapsed < 2300 ? Math.floor(elapsed/110)%12 : Math.min(23,12+Math.floor((elapsed-2300)/150));
+        const index = isIdle ? Math.floor((elapsed-revealAt)/240)%16 : elapsed < walkEnd ? Math.floor(elapsed/90)%12 : Math.min(23,12+Math.floor((elapsed-walkEnd)/sitFrame));
         const candidate = (isIdle ? resting : walking)[index];
         const f = validFrame(candidate) ? candidate : (isIdle ? fallbackIdle : fallbackWalk);
         const ctx = canvas.current.getContext("2d");
@@ -87,11 +89,11 @@ export function CharacterIntro({ ready, onSit, forceMotion = false }: { ready: b
         ctx.clearRect(0,0,240,280); ctx.imageSmoothingEnabled = false;
         const height = isIdle ? f.h / maxIdleHeight * seatedHeight : f.h / maxWalkHeight * 218;
         const width = height*f.w/f.h;
-        const baseline = 210 + Math.min(1, Math.max(0, (elapsed - 2300) / 1650)) * 60;
+        const baseline = 210 + Math.min(1, Math.max(0, (elapsed - walkEnd) / (sitFinished - walkEnd))) * 60;
         ctx.drawImage(isIdle ? idle : walk, f.x,f.y,f.w,f.h,120-width/2,baseline-height,width,height);
         const travel = Math.max(0, canvas.current.parentElement?.offsetLeft ?? innerWidth * .6);
-        canvas.current.style.transform = `translateX(${forcedSkip ? 0 : -Math.max(0,1-elapsed/2300)*travel}px)`;
-        canvas.current.dataset.phase = elapsed < 2300 ? "walking" : elapsed < sitFinished ? "sitting" : elapsed < revealAt ? "settling" : "idle";
+        canvas.current.style.transform = `translateX(${forcedSkip ? 0 : -Math.max(0,1-elapsed/walkEnd)*travel}px)`;
+        canvas.current.dataset.phase = elapsed < walkEnd ? "walking" : elapsed < sitFinished ? "sitting" : elapsed < revealAt ? "settling" : "idle";
         if (elapsed >= revealAt && !settled) { settled = true; callback.current(); }
         if (!reduced) raf = requestAnimationFrame(render);
       };

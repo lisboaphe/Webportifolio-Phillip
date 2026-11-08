@@ -13,6 +13,7 @@ import { animateTileTransition } from "@/components/animations/animateTileTransi
 import { ResumeSection } from "@/components/sections/ResumeSection";
 import { ContactSection } from "@/components/sections/ContactSection";
 
+const INTRO_SEEN_KEY = "intro-seen";
 type Page = "about" | "projects" | "stack" | "resume" | "next" | "message";
 const tabs: { id: Page; label: string; icon?: string; glyph?: string; detail: string }[] = [
   { id: "about", label: "About me", icon: "Icon_AboutME", detail: "Turning curiosity into code, systems, and security." },
@@ -30,8 +31,8 @@ const focusAreas = [
   {title: "Cybersecurity", icon: "Security", text: "Learning security through networking, tools, labs and hands-on experimentation."},
 ];
 const socialItems = [
-  {label: "GitHub", icon: "Icon_GitHub.png", href: site.socials.github === "#" ? "" : site.socials.github},
-  {label: "LinkedIn", icon: "Icon_LinkedIn.png", href: site.socials.linkedin === "#" ? "" : site.socials.linkedin},
+  {label: "GitHub", icon: "Icon_GitHub-small.webp", href: site.socials.github === "#" ? "" : site.socials.github},
+  {label: "LinkedIn", icon: "Icon_LinkedIn-small.webp", href: site.socials.linkedin === "#" ? "" : site.socials.linkedin},
 ];
 function SocialItem({item, compact = false}: {item: typeof socialItems[number]; compact?: boolean}) {
   const children = <><img src={`/pixel/${item.icon}`} alt=""/>{!compact && <span>{item.label}{!item.href && <small>Coming soon</small>}</span>}</>;
@@ -61,8 +62,29 @@ export function PortfolioLayout() {
       hero.current.style.setProperty("--origin-y", "0px");
     }
     setRevealed(true);
+    try { localStorage.setItem(INTRO_SEEN_KEY, "1"); } catch {}
   };
   const replay = () => { hero.current?.style.removeProperty("clip-path"); hero.current?.style.removeProperty("animation"); setForceMotion(true); setRevealed(false); setIntroRun(n => n + 1); window.scrollTo(0, 0); };
+  useEffect(() => {
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let seen = false;
+    try { seen = localStorage.getItem(INTRO_SEEN_KEY) === "1"; } catch {}
+    if (reduce) setForceMotion(false);
+    if (reduce || seen) reveal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // While the intro plays, any click or key press skips it.
+  useEffect(() => {
+    if (revealed) return;
+    const skip = (event: Event) => {
+      if (event instanceof KeyboardEvent && ["Tab", "Shift", "Alt", "Control", "Meta"].includes(event.key)) return;
+      reveal();
+    };
+    window.addEventListener("pointerdown", skip);
+    window.addEventListener("keydown", skip);
+    return () => { window.removeEventListener("pointerdown", skip); window.removeEventListener("keydown", skip); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealed]);
   useEffect(() => {
     const align = () => {
       if (!photo.current || !stage.current) return;
@@ -121,7 +143,7 @@ export function PortfolioLayout() {
     <div ref={hero} onAnimationEnd={event => { if (event.target === event.currentTarget && event.animationName === "water-reveal") { event.currentTarget.style.animation = "none"; event.currentTarget.style.clipPath = "none"; } }} className={`hero-surface ${revealed ? "is-revealed" : ""}`} inert={!revealed || !!page || busy}>
       <div className="bento-layout">
         <section className="focus-areas" aria-label="What I do">{focusAreas.map(area => <article className="focus-card" key={area.title}><PixelIcon name={`Icon_${area.icon}`}/><h2>{area.title}</h2><p>{area.text}</p></article>)}</section>
-        <div ref={photo} className="photo-tile"><img src="/chibi/phillip.png" alt="Pixel-art Phillip wearing a black hoodie" className="portrait-image"/><div className="photo-caption"><span>PHILLIP</span><span>One pixel at a time.</span></div></div>
+        <div ref={photo} className="photo-tile"><img src="/chibi/phillip.webp" alt="Pixel-art Phillip wearing a black hoodie" className="portrait-image"/><div className="photo-caption"><span>PHILLIP</span><span>One pixel at a time.</span></div></div>
         <nav className="portal-nav" aria-label="Explore my portfolio">{tabs.map((tab)=><button key={tab.id} disabled={busy} onClick={e=>{history.pushState(null,"",`#${tab.id}`);void transition(tab.id,e.currentTarget);}} className={`portal-button tile-${tab.id}`}>{tab.icon ? <PixelIcon name={tab.icon}/> : <span className="portal-glyph">{tab.glyph}</span>}<span className="portal-text"><strong>{tab.label}</strong><small>{tab.detail}</small></span></button>)}
         <div className={`portal-button tile-contact contact-card ${contactOpen ? "contact-open" : ""}`} onKeyDown={e=>{if(e.key==="Escape") {setContactOpen(false);e.currentTarget.querySelector("button")?.focus();}}}>
           <button className="contact-toggle" aria-expanded={contactOpen} aria-controls="contact-options" onClick={()=>setContactOpen(v=>!v)}><span className="contact-heading"><PixelIcon name="Icon_Contact"/><span className="portal-text"><strong>Contact</strong><small>Let’s connect</small></span></span></button>
@@ -129,7 +151,7 @@ export function PortfolioLayout() {
         </div></nav>
       </div>
     </div>
-    <div ref={anchor} className={`character-anchor ${page ? "character-hidden" : ""}`}><CharacterIntro key={introRun} forceMotion={forceMotion} ready={revealed} onSit={reveal}/></div>
+    <div ref={anchor} className={`character-anchor ${page ? "character-hidden" : ""}`}><CharacterIntro key={`${introRun}-${forceMotion}`} forceMotion={forceMotion} ready={revealed} onSit={reveal}/></div>
     </div>
     {revealed && !page && <WorkstationArtwork/> }
     {revealed && !page && !busy && <div className="motion-controls"><button onClick={() => setForceMotion(v => !v)} aria-pressed={forceMotion}>Tile animations: {forceMotion ? "on" : "off"}</button><button onClick={replay}>Replay intro</button></div>}

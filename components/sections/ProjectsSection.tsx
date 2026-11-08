@@ -6,7 +6,7 @@ export function ProjectsSection() {
     <section id="work" className="px-5 py-24 sm:px-7 sm:py-28 lg:px-10 lg:py-36">
       <div className="mx-auto max-w-7xl">
         <SectionHeading
-          kicker="02 / selected work"
+          kicker="Selected work"
           title="Projects that deserve more than a small card."
           body="Personal projects, experiments and the source code behind them."
         />
