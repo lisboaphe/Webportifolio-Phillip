@@ -71,7 +71,7 @@ export function PortfolioLayout() {
     if (!a || !h || !s) return;
     setDrops(list => [...list, { id: Date.now() + step, step, x: a.left + a.width / 2 - s.left, y: h.top - s.top }]);
   };
-  const replay = () => { hero.current?.style.removeProperty("clip-path"); hero.current?.style.removeProperty("animation"); setForceMotion(true); setRevealed(false); setIntroRun(n => n + 1); window.scrollTo(0, 0); };
+  const replay = () => { hero.current?.style.removeProperty("clip-path"); hero.current?.style.removeProperty("animation"); hero.current?.style.removeProperty("filter"); setForceMotion(true); setRevealed(false); setIntroRun(n => n + 1); window.scrollTo(0, 0); };
   useEffect(() => {
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let seen = false;
@@ -148,7 +148,7 @@ export function PortfolioLayout() {
     {drops.map(d => <span key={d.id} className={`pre-ripple step-${d.step}`} style={{left: d.x, top: d.y}} aria-hidden="true" onAnimationEnd={() => setDrops(list => list.filter(x => x.id !== d.id))}/>)}
     <header className="identity" aria-hidden={!revealed || !!page}><div className="identity-content"><h1>Phillip Lisboa</h1><p>Wirtschaftsinformatik Student · Developer · Cybersecurity Enthusiast</p></div></header>
     <nav className={`rim-socials ${page ? "character-hidden" : ""}`} aria-label="Social links" inert={!revealed || !!page || busy}>{socialItems.map(item=><SocialItem key={item.label} item={item} compact/>)}<button type="button" className="contact-link" aria-label="Send me a message" title="Send me a message" onClick={e=>openMessage(e.currentTarget)}><img src="/pixel/Icon_Email.svg" alt=""/></button></nav>
-    <div ref={hero} onAnimationEnd={event => { if (event.target === event.currentTarget && event.animationName === "water-reveal") { event.currentTarget.style.animation = "none"; event.currentTarget.style.clipPath = "none"; } }} className={`hero-surface ${revealed ? "is-revealed" : ""}`} inert={!revealed || !!page || busy}>
+    <div ref={hero} onAnimationEnd={event => { if (event.target === event.currentTarget && event.animationName === "water-reveal") { event.currentTarget.style.setProperty("animation", "none", "important"); event.currentTarget.style.setProperty("clip-path", "none", "important"); event.currentTarget.style.setProperty("filter", "none", "important"); } }} className={`hero-surface ${revealed ? "is-revealed" : ""}`} inert={!revealed || !!page || busy}>
       <div className="bento-layout">
         <section className="focus-areas" aria-label="What I do">{focusAreas.map(area => <article className="focus-card" key={area.title}><PixelIcon name={`Icon_${area.icon}`}/><h2>{area.title}</h2><p>{area.text}</p></article>)}</section>
         <div ref={photo} className="photo-tile"><img src="/chibi/phillip.webp" alt="Pixel-art Phillip wearing a black hoodie" className="portrait-image"/><div className="photo-caption"><span>PHILLIP</span><span>One pixel at a time.</span></div></div>
