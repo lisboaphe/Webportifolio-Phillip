@@ -11,8 +11,9 @@ import { WorkstationArtwork } from "./WorkstationArtwork";
 import { CharacterIntro } from "@/components/animations/CharacterIntro";
 import { animateTileTransition } from "@/components/animations/animateTileTransition";
 import { ResumeSection } from "@/components/sections/ResumeSection";
+import { ContactSection } from "@/components/sections/ContactSection";
 
-type Page = "about" | "projects" | "stack" | "resume" | "next";
+type Page = "about" | "projects" | "stack" | "resume" | "next" | "message";
 const tabs: { id: Page; label: string; icon?: string; glyph?: string; detail: string }[] = [
   { id: "about", label: "About me", icon: "Icon_AboutME", detail: "Turning curiosity into code, systems, and security." },
   { id: "projects", label: "Projects", icon: "Icon_Projects", detail: "Ideas brought to life" },
@@ -20,6 +21,8 @@ const tabs: { id: Page; label: string; icon?: string; glyph?: string; detail: st
   { id: "next", label: "Next steps", icon: "Icon_Next", detail: "Building, learning, growing" },
   { id: "resume", label: "Résumé", icon: "Icon_Resume", detail: "My background & experience" },
 ];
+// Pages that open as a panel but have no tile of their own.
+const pages = [...tabs, { id: "message" as Page, label: "Send a message", detail: "" }];
 
 const focusAreas = [
   {title: "Web Development", icon: "Web", text: "Building modern web experiences with React, Next.js and Tailwind CSS."},
@@ -27,13 +30,12 @@ const focusAreas = [
   {title: "Cybersecurity", icon: "Security", text: "Learning security through networking, tools, labs and hands-on experimentation."},
 ];
 const socialItems = [
-  {label: "Email", icon: "Icon_Email.svg", href: site.email && site.email !== "hello@example.com" ? `mailto:${site.email}` : ""},
   {label: "GitHub", icon: "Icon_GitHub.png", href: site.socials.github === "#" ? "" : site.socials.github},
   {label: "LinkedIn", icon: "Icon_LinkedIn.png", href: site.socials.linkedin === "#" ? "" : site.socials.linkedin},
 ];
 function SocialItem({item, compact = false}: {item: typeof socialItems[number]; compact?: boolean}) {
   const children = <><img src={`/pixel/${item.icon}`} alt=""/>{!compact && <span>{item.label}{!item.href && <small>Coming soon</small>}</span>}</>;
-  return item.href ? <a className="contact-link" href={item.href} aria-label={item.label} title={item.label} target={item.label === "Email" ? undefined : "_blank"} rel="noopener noreferrer">{children}</a> : <span className="contact-link unavailable" aria-label={`${item.label} — coming soon`} title={`${item.label} — coming soon`}>{children}</span>;
+  return item.href ? <a className="contact-link" href={item.href} aria-label={item.label} title={item.label} target="_blank" rel="noopener noreferrer">{children}</a> : <span className="contact-link unavailable" aria-label={`${item.label} — coming soon`} title={`${item.label} — coming soon`}>{children}</span>;
 }
 
 export function PortfolioLayout() {
@@ -91,7 +93,7 @@ export function PortfolioLayout() {
       await animateTileTransition({
         surface: overlay.current, source, rect, panelRef: panel,
         target: target !== null,
-        label: tabs.find(tab => tab.id === target)?.label || "",
+        label: pages.find(tab => tab.id === target)?.label || "",
         onCommit: () => { setPage(target); opened.current = target; },
       });
     }
@@ -103,18 +105,19 @@ export function PortfolioLayout() {
   useEffect(() => {
     const sync = () => {
       const id = location.hash.slice(1) as Page;
-      const target = tabs.some(t=>t.id===id) ? id : null;
+      const target = pages.some(t=>t.id===id) ? id : null;
       if (target !== opened.current) void transition(target);
     };
     sync(); window.addEventListener("popstate",sync);
     return () => window.removeEventListener("popstate",sync);
   }, [busy]);
+  const openMessage = (button: HTMLButtonElement) => { setContactOpen(false); history.pushState(null,"","#message"); void transition("message", button); };
   const close = () => { history.pushState(null,"",location.pathname); void transition(null); };
   return <main className={`portfolio-shell ${revealed ? "intro-complete" : "intro-playing"} ${forceMotion ? "force-motion motion-enabled" : "motion-reduced"}`}>
     <div ref={stage} className="stage">
     <div className="sitting-line" aria-hidden="true"/>
     <header className="identity" aria-hidden={!revealed || !!page}><div className="identity-content"><h1>Phillip Lisboa</h1><p>Wirtschaftsinformatik Student · Developer · Cybersecurity Enthusiast</p></div></header>
-    <nav className={`rim-socials ${page ? "character-hidden" : ""}`} aria-label="Social links" inert={!revealed || !!page || busy}>{[socialItems[1],socialItems[2],socialItems[0]].map(item=><SocialItem key={item.label} item={item} compact/>)}</nav>
+    <nav className={`rim-socials ${page ? "character-hidden" : ""}`} aria-label="Social links" inert={!revealed || !!page || busy}>{socialItems.map(item=><SocialItem key={item.label} item={item} compact/>)}<button type="button" className="contact-link" aria-label="Send me a message" title="Send me a message" onClick={e=>openMessage(e.currentTarget)}><img src="/pixel/Icon_Email.svg" alt=""/></button></nav>
     <div ref={hero} onAnimationEnd={event => { if (event.target === event.currentTarget && event.animationName === "water-reveal") { event.currentTarget.style.animation = "none"; event.currentTarget.style.clipPath = "none"; } }} className={`hero-surface ${revealed ? "is-revealed" : ""}`} inert={!revealed || !!page || busy}>
       <div className="bento-layout">
         <section className="focus-areas" aria-label="What I do">{focusAreas.map(area => <article className="focus-card" key={area.title}><PixelIcon name={`Icon_${area.icon}`}/><h2>{area.title}</h2><p>{area.text}</p></article>)}</section>
@@ -122,7 +125,7 @@ export function PortfolioLayout() {
         <nav className="portal-nav" aria-label="Explore my portfolio">{tabs.map((tab)=><button key={tab.id} disabled={busy} onClick={e=>{history.pushState(null,"",`#${tab.id}`);void transition(tab.id,e.currentTarget);}} className={`portal-button tile-${tab.id}`}>{tab.icon ? <PixelIcon name={tab.icon}/> : <span className="portal-glyph">{tab.glyph}</span>}<span className="portal-text"><strong>{tab.label}</strong><small>{tab.detail}</small></span></button>)}
         <div className={`portal-button tile-contact contact-card ${contactOpen ? "contact-open" : ""}`} onKeyDown={e=>{if(e.key==="Escape") {setContactOpen(false);e.currentTarget.querySelector("button")?.focus();}}}>
           <button className="contact-toggle" aria-expanded={contactOpen} aria-controls="contact-options" onClick={()=>setContactOpen(v=>!v)}><span className="contact-heading"><PixelIcon name="Icon_Contact"/><span className="portal-text"><strong>Contact</strong><small>Let’s connect</small></span></span></button>
-          <div id="contact-options" className="contact-options" inert={!contactOpen} aria-hidden={!contactOpen}><div>{socialItems.map(item=><SocialItem key={item.label} item={item}/>)}</div></div>
+          <div id="contact-options" className="contact-options" inert={!contactOpen} aria-hidden={!contactOpen}><div>{socialItems.map(item=><SocialItem key={item.label} item={item}/>)}<button type="button" className="contact-link" onClick={e=>openMessage(e.currentTarget)}><img src="/pixel/Icon_Email.svg" alt=""/><span>Email<small>Send me a message</small></span></button></div></div>
         </div></nav>
       </div>
     </div>
@@ -132,14 +135,14 @@ export function PortfolioLayout() {
     {revealed && !page && !busy && <div className="motion-controls"><button onClick={() => setForceMotion(v => !v)} aria-pressed={forceMotion}>Tile animations: {forceMotion ? "on" : "off"}</button><button onClick={replay}>Replay intro</button></div>}
     {!revealed && !page && !busy && <button className="skip-intro" onClick={reveal}>Skip intro</button>}
     <div className="transition-surface" ref={overlay} aria-hidden="true" inert/>
-    {page && <div ref={panel} className="destination" role="dialog" aria-modal="true" aria-label={tabs.find(t=>t.id===page)?.label} tabIndex={-1} onKeyDown={e=>{if(e.key==="Escape")close();
+    {page && <div ref={panel} className="destination" role="dialog" aria-modal="true" aria-label={pages.find(t=>t.id===page)?.label} tabIndex={-1} onKeyDown={e=>{if(e.key==="Escape")close();
       if(e.key==="Tab") {
-        const items = panel.current?.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],[tabindex="0"]');
+        const items = panel.current?.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]):not([tabindex="-1"]),textarea:not([disabled]),[tabindex="0"]');
         if(items?.length) {
           const first=items[0], last=items[items.length-1];
           if(e.shiftKey && (document.activeElement===first || document.activeElement===panel.current)){e.preventDefault();last.focus();}
           else if(!e.shiftKey && document.activeElement===last){e.preventDefault();first.focus();}
         }
-      }}}><div className="panel-close-anchor"><button className="panel-close" onClick={close} disabled={busy} aria-label="Close expanded tile" title="Close (Esc)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg></button></div><div className={`topic-content ${forceMotion ? "animate__animated animate__fadeInUp" : ""}`}>{page==="about" ? <AboutSection/> : page==="projects" ? <ProjectsSection/> : page==="stack" ? <TechStackSection/> : page==="next" ? <NextStepsSection/> : <ResumeSection/>}</div></div>}
+      }}}><div className="panel-close-anchor"><button className="panel-close" onClick={close} disabled={busy} aria-label="Close expanded tile" title="Close (Esc)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg></button></div><div className={`topic-content ${forceMotion ? "animate__animated animate__fadeInUp" : ""}`}>{page==="about" ? <AboutSection/> : page==="projects" ? <ProjectsSection/> : page==="stack" ? <TechStackSection/> : page==="next" ? <NextStepsSection/> : page==="message" ? <ContactSection/> : <ResumeSection/>}</div></div>}
   </main>;
 }

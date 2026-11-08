@@ -21,22 +21,12 @@ export function ProjectsSection() {
                 <div className="project-grid absolute inset-0 opacity-45" />
                 <div className={`absolute inset-0 ${index % 3 === 0 ? "bg-[radial-gradient(circle_at_30%_35%,rgba(217,70,239,.22),transparent_38%),radial-gradient(circle_at_72%_67%,rgba(34,211,238,.20),transparent_38%)]" : index % 3 === 1 ? "bg-[radial-gradient(circle_at_60%_36%,rgba(59,130,246,.22),transparent_35%),radial-gradient(circle_at_30%_68%,rgba(139,92,246,.18),transparent_40%)]" : "bg-[radial-gradient(circle_at_40%_45%,rgba(34,197,94,.13),transparent_36%),radial-gradient(circle_at_75%_70%,rgba(34,211,238,.18),transparent_40%)]"}`} />
 
-                <div className="absolute left-1/2 top-1/2 w-[72%] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/12 bg-black/45 p-3 shadow-2xl backdrop-blur-xl sm:w-[62%] lg:w-[68%]">
-                  <div className="mb-3 flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
-                    <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
-                    <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
-                  </div>
-                  <div className="aspect-[16/10] rounded-xl border border-white/8 bg-gradient-to-br from-white/7 to-white/[0.015] p-4">
-                    <div className="h-2 w-20 bg-white/14" />
-                    <div className="mt-4 h-10 w-3/4 bg-white/8" />
-                    <div className="mt-3 h-2 w-full bg-white/8" />
-                    <div className="mt-2 h-2 w-4/5 bg-white/8" />
-                    <div className="mt-5 flex gap-2">
-                      <div className="h-7 w-20 rounded-md bg-white/10" />
-                      <div className="h-7 w-16 rounded-md border border-white/10" />
+                <div className={`project-shots ${project.layout === "tall" ? "is-tall" : "is-wide"} ${project.images.length > 1 ? "has-two" : ""}`}>
+                  {project.images.map((image) => (
+                    <div className="project-shot" key={image.src}>
+                      <img src={image.src} alt={image.alt} loading="lazy" />
                     </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
@@ -67,9 +57,11 @@ export function ProjectsSection() {
 
                 {project.href !== "#" ? <a
                   href={project.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="mt-10 inline-flex w-fit items-center gap-2 text-sm font-medium text-white/70 transition group-hover:text-white"
                 >
-                  Open project
+                  View on GitHub →
                 </a> : <span className="mt-10 text-sm text-white/50">Project details coming soon</span>}
               </div>
             </article>

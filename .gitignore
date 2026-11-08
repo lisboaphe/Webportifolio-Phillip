@@ -7,3 +7,4 @@ out
 
 # Automatisch erzeugter TypeScript-Zwischenspeicher
 *.tsbuildinfo
+!.env.example
