@@ -65,9 +65,9 @@ export function PortfolioLayout() {
     setRevealed(true);
     try { localStorage.setItem(INTRO_SEEN_KEY, "1"); } catch {}
   };
-  // Small and medium ripple at the spot where the big reveal ripple will start.
+  // Small and medium ripple under the character's feet on the line, where he is at that step.
   const drop = (step: 1 | 2) => {
-    const a = anchor.current?.getBoundingClientRect(), h = hero.current?.getBoundingClientRect(), s = stage.current?.getBoundingClientRect();
+    const a = anchor.current?.querySelector("canvas")?.getBoundingClientRect(), h = hero.current?.getBoundingClientRect(), s = stage.current?.getBoundingClientRect();
     if (!a || !h || !s) return;
     setDrops(list => [...list, { id: Date.now() + step, step, x: a.left + a.width / 2 - s.left, y: h.top - s.top }]);
   };

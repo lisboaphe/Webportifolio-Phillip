@@ -71,8 +71,8 @@ export function CharacterIntro({ ready, onSit, onCue, forceMotion = false }: { r
       const walkEnd = 1500, sitFrame = 100;
       const sitFinished = walkEnd + 12 * sitFrame;
       const revealAt = sitFinished + 200;
-      // Two small "countdown" ripples before the big reveal ripple.
-      const cues: [number, 1 | 2][] = [[revealAt - 800, 1], [revealAt - 400, 2]];
+      // Footstep ripples while walking in: small, then medium; the big one comes when he sits.
+      const cues: [number, 1 | 2][] = [[800, 1], [1300, 2]];
       let cued = 0;
       const reduced = !forceMotion && matchMedia("(prefers-reduced-motion: reduce)").matches;
       const skip = reduced;
